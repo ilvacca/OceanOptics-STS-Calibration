@@ -3,22 +3,124 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from datetime import datetime
 
-Version="1.1"
+Version="1.2"
 email="alexvac@hotmail.it"
 
 #INIZIALIZZO LE LISTE E LE VARIABILI
 b=0
+t=0
+numero_dark=0
 numero_tsv=0
 unisci=0
+dark_value_sum=0
 
+dark_list=[]
 wl_list=[]
+wld_list=[]
 en_list=[]
+da_list=[]
 MATRICE=[]
+MATRICED=[]
 namefile_list=[]
 
 #INTRO__________________________________________________________________________
-print "Welcome to OceanVacca " + Version + "\n@: " + email
-print "____________________________\nAn STS tsv converter to txt" + "\n" + "for proper exportation" + "\n____________________________\n"
+print "Welcome to VaccaOptics " + Version + "\n@: " + email
+print "____________________________\nAn STS tsv converter to txt" + "\n" + "for proper exportation"+ "\n" + "and calibration" + "\n____________________________\n"
+
+##DOMANDA DI RICHIESTA DARK DATA__________________________________________
+if raw_input("Do you have dark data? [Si/No]") in ["Si","SI","si","sI"]:
+    print "\n|D A R K   S I G N A L   A V E R A G E"
+    print "|Please place your dark.tsv files in the /DARK directory"
+    dark_bool=1
+else:
+    dark_bool=0
+
+##LETTURA E MEDIA DEI DARK______________________________________________________
+
+if dark_bool==1:
+
+    print ("|\n|Searching for dark.tsv files in" + str(os.path.dirname(os.path.realpath(__file__)) + "\DARK"))
+
+    for file in os.listdir(str(os.path.dirname(os.path.realpath(__file__)) + "\DARK")):
+        if file.endswith(".tsv"):
+            numero_dark+=1
+    if numero_dark>0:
+        print "|Found " + str(numero_dark) + " *.tsv dark files\n|"
+    else:
+        print "|No dark files found."
+
+    #LOOP PER ACQUISIZIONE DARK E MEDIA DEI SEGNALI
+    for file in os.listdir(str(os.path.dirname(os.path.realpath(__file__)) + "\DARK")):
+
+        #SE IL FILE TERMINA PER *tsv LO SCRIPT VA AVANTI ED ESEGUE IL POPOLAMENTO DELLA MATRICED
+        if file.endswith(".tsv"):
+
+            print ("|%d/%d - Working...")%(t+1, numero_dark)
+
+            dark_open=open(str("DARK/" + file),'rb')
+
+            for i in range(0,5):
+                next(dark_open)
+
+            dark_aperto=csv.reader(dark_open, delimiter='\t')
+
+            for rigad in dark_aperto:
+                wld=float(rigad[0])
+                da=float(rigad[1])
+                if t==0:
+                    wld_list.append(wld)
+                da_list.append(da)
+            t+=1
+
+            dark_open.close()
+
+            if len(MATRICED)==0:
+                MATRICED.append(wld_list)
+
+            MATRICED.append(da_list)
+
+            da_list=[]
+
+    print "|\n|Dark list done!"
+
+    #MEDIA DEI DARK__________________________________________
+
+    print "|\n|Starting dark data averaging..."
+    
+    for colonna in range(0,len(MATRICED[0])):
+        for riga in range(0+1,len(MATRICED)):
+            dark_value_sum+=MATRICED[riga][colonna]
+        dark_value=dark_value_sum/(len(MATRICED)-1)
+        dark_list.append(dark_value)
+        dark_value_sum=0
+
+    #AGGIUNZIONE DELLA LISTA DEGLI AVERAGE ALLA MATRICED
+    MATRICED.append(dark_list)
+
+    ##SCRITTURA____________________________________________________________________
+
+    #APRO IL FILE DI OUTPUT
+    outputd=open("DARK/Dark.txt","w")
+
+    outputd.write("WL" + "\t")
+
+    for i in range(0,len(MATRICED)-1):
+        outputd.write(str(i) + "\t")
+    outputd.write("\n")
+
+    #TRASPONGO LA MATRICE DARK FINALE
+    MATRICEDt=map(list,zip(*MATRICED))
+
+    #SCRIVO PER RIGHE LE COLONNE
+    for colonne in MATRICEDt:
+        for item in colonne:
+            outputd.write(str(item).replace(".",",") + "\t")
+        outputd.write("\n")
+        
+    outputd.close()
+
+    print "|Dark averaging done!\n"
+        
 
 ##LETTURA_______________________________________________________________________
 
@@ -29,6 +131,10 @@ for file in os.listdir(os.path.dirname(os.path.realpath(__file__))):
     if file.endswith(".tsv"):
         numero_tsv+=1
 
+#COSA SUCCEDE SE NUMERO TSV=0
+if numero_tsv==0:
+    print "No *.tsv found inside the directory."
+
 print "Found " + str(numero_tsv) + " tsv files \n"
 
 #LOOP CON I FILE ALL'INTERNO DELLA CARTELLA DELLO SCRIPT
@@ -37,8 +143,7 @@ for file in os.listdir(os.path.dirname(os.path.realpath(__file__))):
     #SE IL FILE TERMINA PER *tsv VA AVANTI
     if file.endswith(".tsv"):
 
-        if (b+1)%10==0:
-            print ("%d/%d - Working...")%(b+1, numero_tsv)
+        print ("%d/%d - Working...")%(b+1, numero_tsv)
 
         #PRENDO IL NOME DEL PRIMO FILE PER DECIDERE IL NOME DELL'OUTPUT
         nome_file_output=file[:-8]
