@@ -28,8 +28,8 @@ print "Welcome to VaccaOptics " + Version + "\n@: " + email
 print "____________________________\nAn STS tsv converter to txt" + "\n" + "for proper exportation"+ "\n" + "and calibration" + "\n____________________________\n"
 
 ##DOMANDA DI RICHIESTA DARK DATA__________________________________________
-if raw_input("Do you have dark data? [Si/No]") in ["Si","SI","si","sI"]:
-    print "\n|D A R K   S I G N A L   A V E R A G E"
+if raw_input("Do you have dark data? [Y/N] " ) in ["y","Y","yes","YES","Si","SI","si","sI"]:
+    print "\n|D A R K   S I G N A L   A V E R A G E ____________________________________"
     print "|Please place your dark.tsv files in the /DARK directory"
     dark_bool=1
 else:
@@ -39,7 +39,7 @@ else:
 
 if dark_bool==1:
 
-    print ("|\n|Searching for dark.tsv files in" + str(os.path.dirname(os.path.realpath(__file__)) + "\DARK"))
+    print ("|\n|Searching for dark.tsv files in " + str(os.path.dirname(os.path.realpath(__file__)) + "\DARK"))
 
     for file in os.listdir(str(os.path.dirname(os.path.realpath(__file__)) + "\DARK")):
         if file.endswith(".tsv"):
@@ -55,11 +55,11 @@ if dark_bool==1:
         #SE IL FILE TERMINA PER *tsv LO SCRIPT VA AVANTI ED ESEGUE IL POPOLAMENTO DELLA MATRICED
         if file.endswith(".tsv"):
 
-            print ("|%d/%d - Working...")%(t+1, numero_dark)
+            print ("|%d/%d - %s - Working...")%(t+1, numero_dark, file)
 
             dark_open=open(str("DARK/" + file),'rb')
 
-            for i in range(0,5):
+            for p in range(0,5):
                 next(dark_open)
 
             dark_aperto=csv.reader(dark_open, delimiter='\t')
@@ -123,8 +123,8 @@ if dark_bool==1:
         
 
 ##LETTURA_______________________________________________________________________
-
-print "Searching for tsv files in " + os.path.dirname(os.path.realpath(__file__))
+print "\n|D A T A   C A L I B R A T I O N ____________________________________"
+print "|Searching for *.tsv files in " + os.path.dirname(os.path.realpath(__file__))
 
 #RICERCA DEL NUMERO DI FILE TSV NELLA CARTELLA
 for file in os.listdir(os.path.dirname(os.path.realpath(__file__))):
@@ -133,9 +133,9 @@ for file in os.listdir(os.path.dirname(os.path.realpath(__file__))):
 
 #COSA SUCCEDE SE NUMERO TSV=0
 if numero_tsv==0:
-    print "No *.tsv found inside the directory."
+    print "|No *.tsv found inside the directory."
 
-print "Found " + str(numero_tsv) + " tsv files \n"
+print "|Found " + str(numero_tsv) + " *.tsv files\n|"
 
 #LOOP CON I FILE ALL'INTERNO DELLA CARTELLA DELLO SCRIPT
 for file in os.listdir(os.path.dirname(os.path.realpath(__file__))):
@@ -143,7 +143,7 @@ for file in os.listdir(os.path.dirname(os.path.realpath(__file__))):
     #SE IL FILE TERMINA PER *tsv VA AVANTI
     if file.endswith(".tsv"):
 
-        print ("%d/%d - Working...")%(b+1, numero_tsv)
+        print ("|%d/%d - %s - Working...")%(b+1, numero_tsv, file)
 
         #PRENDO IL NOME DEL PRIMO FILE PER DECIDERE IL NOME DELL'OUTPUT
         nome_file_output=file[:-8]
@@ -183,7 +183,7 @@ for file in os.listdir(os.path.dirname(os.path.realpath(__file__))):
         #RIINIZIALIZZO LA LISTA DELLE MISURE
         en_list=[]
 
-print "\nDone\n"
+print "|\n|Done\n"
 
 
 ##SCRITTURA____________________________________________________________________
